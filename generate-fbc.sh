@@ -123,7 +123,7 @@ case $cmd in
       url=$(skopeo inspect docker://"$image" | grep "\"url\": ")
       tag1=${url/*\/images\/}
       tag=${tag1/\",/}
-      sed -i "s|$image|$image\n# hco-bundle-registry $tag|g" "$frag"/graph.yaml
+      sed -i "s|$image|$image\n# hco-bundle-registry $tag|g" $frag/graph.yaml
     done
   ;;
   *)
