@@ -9,6 +9,8 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-event: '[pull_request]'
     pipelinesascode.tekton.dev/on-target-branch: '[main]'
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "pull_request" && ("v4.14/*".pathChanged() || ".tekton/*".pathChanged())
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: cnv-fbc-v4-14
