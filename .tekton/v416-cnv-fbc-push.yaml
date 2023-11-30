@@ -5,9 +5,9 @@ metadata:
     build.appstudio.openshift.io/repo: https://github.com/openshift-cnv/cnv-fbc?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
-    pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main"
+    pipelinesascode.tekton.dev/max-keep-runs: "1"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push" && target_branch == "main" && ("v4.16/***".pathChanged() || ".tekton/v416-cnv-fbc-push.yaml".pathChanged())
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: cnv-fbc-v4-16
