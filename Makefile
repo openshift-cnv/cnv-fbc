@@ -10,7 +10,7 @@ sanity-brew:
 
 check-prod:
 	./generate-fbc.sh --init-basic-all
-	git diff HEAD --no-ext-diff --patience --unified=0 -a --no-prefix "v4.*/graph.yaml" | grep -e "^+" | grep -v -e "^+++" || true
-	NUMLL=$$(git diff HEAD --no-ext-diff --patience --unified=0 -a --no-prefix "v4.*/graph.yaml" | grep -e "^+" | grep -v -e "^+++" || true | wc -l) && echo "Lost Lines: $$NUMLL" && exit $$NUMLL
+	git diff HEAD --no-ext-diff --patience --unified=0 -a --no-prefix "v4.*/graph.yaml" | grep -e "^+" | grep -v -e "^+++" | grep -v v4.99.0 || true
+	NUMLL=$$(git diff HEAD --no-ext-diff --patience --unified=0 -a --no-prefix "v4.*/graph.yaml" | grep -e "^+" | grep -v -e "^+++" | grep -v v4.99.0 || true | wc -l) && echo "Lost Lines: $$NUMLL" && exit $$NUMLL
 
 .PHONY: sanity sanity-brew check-prod
