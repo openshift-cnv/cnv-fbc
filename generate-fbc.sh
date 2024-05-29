@@ -6,6 +6,8 @@ SKOPEO_CMD=${SKOPEO_CMD:-skopeo}
 OPM_CMD=${OPM_CMD:-opm}
 AUTH_FILE=${AUTH_FILE:-}
 
+echo AUTH_FILE=${AUTH_FILE}
+
 package_name="kubevirt-hyperconverged"
 
 helpFunction()
