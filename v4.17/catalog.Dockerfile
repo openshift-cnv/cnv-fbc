@@ -1,8 +1,6 @@
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-# TODO: move to v4.17 once registry.redhat.io/redhat/redhat-operator-index:v4.17
-# will be initialized
-FROM brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.16
+FROM brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.17
 
 # Configure the entrypoint and command
 ENTRYPOINT ["/bin/opm"]
