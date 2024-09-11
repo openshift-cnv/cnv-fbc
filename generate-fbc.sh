@@ -5,8 +5,8 @@ set -e
 SKOPEO_CMD=${SKOPEO_CMD:-skopeo}
 AUTH_FILE=${AUTH_FILE:-}
 
-# shellcheck source=opm_versions.sh
-source opm_versions.sh
+# shellcheck source=opm_utils.sh
+source opm_utils.sh
 
 package_name="kubevirt-hyperconverged"
 
@@ -116,10 +116,10 @@ case $cmd in
     case $yqOrjq in
       "yq")
         touch "${frag}"/graph.yaml
-	$(opm_per_ocp_minor "${frag}") render "$from" -o yaml | yq "select( .package == \"$package_name\" or .name == \"$package_name\")" | yq 'select(.schema == "olm.bundle") = {"schema": .schema, "image": .image}' | yq 'select(.schema == "olm.package") = {"schema": .schema, "name": .name, "defaultChannel": .defaultChannel}' > "${frag}"/graph.yaml
+	./opm render "$from" -o yaml | yq "select( .package == \"$package_name\" or .name == \"$package_name\")" | yq 'select(.schema == "olm.bundle") = {"schema": .schema, "image": .image}' | yq 'select(.schema == "olm.package") = {"schema": .schema, "name": .name, "defaultChannel": .defaultChannel}' > "${frag}"/graph.yaml
       ;;
       "jq")
-        $(opm_per_ocp_minor "${frag}") render "$from" | jq "select( .package == \"$package_name\" or .name == \"$package_name\")" | jq 'if (.schema == "olm.bundle") then {schema: .schema, image: .image} else (if (.schema == "olm.package") then {schema: .schema, name: .name, defaultChannel: .defaultChannel} else . end) end' > "${frag}"/graph.json
+        ./opm render "$from" | jq "select( .package == \"$package_name\" or .name == \"$package_name\")" | jq 'if (.schema == "olm.bundle") then {schema: .schema, image: .image} else (if (.schema == "olm.package") then {schema: .schema, name: .name, defaultChannel: .defaultChannel} else . end) end' > "${frag}"/graph.json
       ;;
       *)
         echo "please specify if yq or jq"
@@ -144,14 +144,14 @@ case $cmd in
       exit 1
     fi
     setBrew "${frag}" "$3"
-    $(opm_per_ocp_minor "${frag}") alpha render-template basic "${frag}"/graph.yaml > "${frag}"/catalog/kubevirt-hyperconverged/catalog.json
+    ./opm alpha render-template basic $(opm_alpha_params "${fraq}") "${frag}"/graph.yaml > "${frag}"/catalog/kubevirt-hyperconverged/catalog.json
     unsetBrew "${frag}" "$3"
   ;;
   "--render-all")
     for f in ./"v4."*; do
       frag=${f#./}
       setBrew "${frag}" "$2"
-      $(opm_per_ocp_minor "${frag}") alpha render-template basic "${frag}"/graph.yaml > "${frag}"/catalog/kubevirt-hyperconverged/catalog.json
+      ./opm alpha render-template basic $(opm_alpha_params "${fraq}") "${frag}"/graph.yaml > "${frag}"/catalog/kubevirt-hyperconverged/catalog.json
       unsetBrew "${frag}" "$2"
     done
   ;;
