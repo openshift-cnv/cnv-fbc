@@ -1,0 +1,47 @@
+name: Sanity Checks
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '.tekton/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '.tekton/**'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compare with production
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 3
+
+      - name: Prepare auth file
+        run: echo ${AUTH_FILE_CONTENT} | base64 -d > ${REGISTRY_AUTH_FILE}
+        env:
+          AUTH_FILE_CONTENT: ${{ secrets.RREGISTRY_AUTH }}
+          REGISTRY_AUTH_FILE: ./auth.json
+
+      - name: Get opm clients
+        run: |
+          source opm_versions.sh
+          download_opm_clients
+          mkdir -p .docker
+          cp auth.json .docker/config.json
+
+      - name: Compare with production
+        run: |
+          export PATH=$(pwd):${PATH}
+          make check-prod
+        env:
+          REGISTRY_AUTH_FILE: ./auth.json
+          SKOPEO_CMD: podman run --rm -v .:/auth quay.io/skopeo/stable:latest
+          AUTH_FILE: --authfile=/auth/auth.json
+          DOCKER_CONFIG: .docker/

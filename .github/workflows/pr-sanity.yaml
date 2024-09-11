@@ -1,0 +1,41 @@
+name: Sanity Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Sanity Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Prepare auth file
+        run: echo ${AUTH_FILE_CONTENT} | base64 -d > ${REGISTRY_AUTH_FILE}
+        env:
+          AUTH_FILE_CONTENT: ${{ secrets.BREW_AUTH }}
+          REGISTRY_AUTH_FILE: ./auth.json
+
+      - name: Get opm clients
+        run: |
+          source opm_versions.sh
+          download_opm_clients
+          mkdir -p .docker
+          cp auth.json .docker/config.json
+
+      - name: Do sanity checks
+        run: |
+          export PATH=$(pwd):${PATH} 
+          make sanity-brew
+        env:
+          REGISTRY_AUTH_FILE: ./auth.json
+          SKOPEO_CMD: podman run --rm -v .:/auth quay.io/skopeo/stable:latest
+          AUTH_FILE: --authfile=/auth/auth.json
+          OPM_CMD: ./linux-amd64-opm
+          DOCKER_CONFIG: .docker/
