@@ -35,7 +35,7 @@ jobs:
           make sanity-brew
         env:
           REGISTRY_AUTH_FILE: ./auth.json
-          SKOPEO_CMD: podman run --rm -v .:/auth quay.io/skopeo/stable:latest
+          SKOPEO_CMD: podman run --dns=8.8.8.8 --rm -v .:/auth quay.io/skopeo/stable:latest
           AUTH_FILE: --authfile=/auth/auth.json
           OPM_CMD: ./linux-amd64-opm
           DOCKER_CONFIG: .docker/
