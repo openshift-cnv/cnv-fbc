@@ -73,10 +73,10 @@ spec:
       workspaces:
       - name: workspace
         workspace: workspace
-    - name: slack-webhook-notification-succeeded
+    - name: slack-webhook-notification
       params:
         - name: message
-          value: PipelineRun $(context.pipelineRun.name) succeeded
+          value: :x: PipelineRun $(context.pipelineRun.name) failed!
         - name: secret-name
           value: slack-cnv-ci-release
         - name: key-name
@@ -93,7 +93,7 @@ spec:
       when:
         - input: $(tasks.status)
           operator: in
-          values: ["Succeeded"]
+          values: ["Failed"]
     params:
     - description: Source Repository URL
       name: git-url
