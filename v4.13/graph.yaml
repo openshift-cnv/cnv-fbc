@@ -5,6 +5,15 @@ entries:
     name: kubevirt-hyperconverged
     defaultChannel: stable
   - entries:
+      - name: kubevirt-hyperconverged-operator.v4.10.5
+        replaces: kubevirt-hyperconverged-operator.v4.10.4
+        skips:
+          - kubevirt-hyperconverged-operator.v4.9.5
+      - name: kubevirt-hyperconverged-operator.v4.11.0
+        replaces: kubevirt-hyperconverged-operator.v4.10.5
+        skipRange: '>=4.10.6 <4.11.0'
+      - name: kubevirt-hyperconverged-operator.v4.11.1
+        replaces: kubevirt-hyperconverged-operator.v4.11.0
       - name: kubevirt-hyperconverged-operator.v4.12.0
         replaces: kubevirt-hyperconverged-operator.v4.11.1
         skipRange: '>=4.11.2 <4.12.0'
@@ -42,6 +51,15 @@ entries:
     name: stable
     package: kubevirt-hyperconverged
     schema: olm.channel
+  - schema: olm.bundle
+    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry@sha256:78d29f077193ab9b98bbc7a1d53f1cf6af69a8261d76aa2d3a2c279e34161c3c
+    # hco-bundle-registry v4.10.5-6
+  - schema: olm.bundle
+    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry@sha256:b83c2f51067335600cc20a39a9d911ad110d700ef46f53e7a18af4e534a77534
+    # hco-bundle-registry v4.11.0-601
+  - schema: olm.bundle
+    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry@sha256:2ed82d656fb357c2eafdbf5e3436a27c6c27e81ff9a78e6108d624b0e5ac4df2
+    # hco-bundle-registry v4.11.1-92
   - schema: olm.bundle
     image: registry.redhat.io/container-native-virtualization/hco-bundle-registry@sha256:73680901c7733ba27f729fd6475971e0909c2fe9efacf74d556f961a1494274e
     # hco-bundle-registry v4.12.0-769
@@ -85,5 +103,5 @@ entries:
     image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:e28ac290ef387c96633ce78cc8e60af41872985980b99fb8db9a8fb301298b9a
     # hco-bundle-registry v4.13.9.rhel9-223
   - schema: olm.bundle
-    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:79380f5d06a0e06ab3382e17aef61e1383063ffbe5124c4fe0bb143715d7ad74
-    # hco-bundle-registry v4.13.11.rhel9-439
+    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:7d941c9431c49777ca5e7873b0fc0b58ab4620d8baca6471747327b2e1f03715
+    # hco-bundle-registry v4.13.11.rhel9-441
