@@ -6,8 +6,8 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push" && target_branch == "main" && ("v4.18/*".pathChanged() || ".tekton/v418-cnv-fbc-push.yaml".pathChanged())
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "main"
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: cnv-fbc-v4-18
@@ -69,27 +69,6 @@ spec:
       workspaces:
       - name: workspace
         workspace: workspace
-    - name: slack-webhook-notification
-      params:
-        - name: message
-          value: ":x: PipelineRun $(context.pipelineRun.name) failed!"
-        - name: secret-name
-          value: slack-cnv-ci-release
-        - name: key-name
-          value: cnv-ci-release
-      taskRef:
-        params:
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-slack-webhook-notification:0.1@sha256:dc17b70633363d78414b8c06dc1660d25742935f106a6116995638e1210c2730
-        - name: name
-          value: slack-webhook-notification
-        - name: kind
-          value: Task
-        resolver: bundles
-      when:
-        - input: $(tasks.status)
-          operator: in
-          values: ["Failed"]
     params:
     - description: Source Repository URL
       name: git-url
@@ -218,7 +197,7 @@ spec:
         - name: name
           value: buildah
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.2@sha256:7d3f090943ecb839cc505b3a5e5305c0203dfc6dbc0096713c0add9ef1e45d90
+          value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.2@sha256:aebfe04c80f7fd937628fad760c095c6a0efacb048f2c98e5d5e7f2b0f134cf9
         - name: kind
           value: task
         resolver: bundles
@@ -250,7 +229,7 @@ spec:
         - name: name
           value: build-image-index
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:7b2c5ab5d711d1d487693072dec6a10ede0076290dabc673bc6ccde9a322674a
+          value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:a89c141c8d35b2e9d9904c92c9b128f7ccf36681adac7f7422b4537b8bb077e7
         - name: kind
           value: task
         resolver: bundles
@@ -296,28 +275,6 @@ spec:
         - name: kind
           value: task
         resolver: bundles
-    - name: rpms-signature-scan
-      params:
-      - name: image-url
-        value: $(tasks.build-image-index.results.IMAGE_URL)
-      - name: image-digest
-        value: $(tasks.build-image-index.results.IMAGE_DIGEST)
-      runAfter:
-      - build-image-index
-      taskRef:
-        params:
-        - name: name
-          value: rpms-signature-scan
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:8f3b23bf1b0ef55cc79d28604d2397a0101ac9c0c42ae26e26532eb2778c801b
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
     - name: inspect-image
       params:
       - name: IMAGE_URL
