@@ -189,7 +189,7 @@ case $cmd in
       image=${line/image: /}
       echo "Processing $image"
       # shellcheck disable=SC2086
-      url=$(${SKOPEO_CMD} inspect --no-tags ${AUTH_FILE} "docker://$image" | grep "\"url\": ")
+      url=$(${SKOPEO_CMD} inspect --format "{{.Labels.url}}" ${AUTH_FILE} docker://"$image")
       tag1=${url/*\/images\/}
       tag=${tag1/\",/}
       sed -i -E "s|^( *)(image: )$image|\1\2$image\n\1# hco-bundle-registry $tag|g" "$frag"/graph.yaml
@@ -205,7 +205,7 @@ case $cmd in
         image=${line/image: /}
         echo "Processing $image"
 	# shellcheck disable=SC2086
-        url=$(${SKOPEO_CMD} inspect --no-tags ${AUTH_FILE} docker://"$image" | grep "\"url\": ")
+        url=$(${SKOPEO_CMD} inspect --format "{{.Labels.url}}" ${AUTH_FILE} docker://"$image")
         tag1=${url/*\/images\/}
         tag=${tag1/\",/}
         sed -i -E "s|^( *)(image: )$image|\1\2$image\n\1# hco-bundle-registry $tag|g" "$frag"/graph.yaml
