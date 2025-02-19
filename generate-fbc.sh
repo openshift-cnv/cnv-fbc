@@ -131,10 +131,12 @@ case $cmd in
       ;;
       "jq")
 # shellcheck disable=SC2086
-        ./opm render $(opm_alpha_params "${frag}") "$from" | jq "select( .package == \"$package_name\" or .name == \"$package_name\")" | \
-            jq 'if (.schema == "olm.bundle") then {schema: .schema, image: .image} else (if (.schema == "olm.package") then {schema: .schema, name: .name, defaultChannel: .defaultChannel} else . end) end' | \
-            jq -s | \
-            jq '{"schema": "olm.template.basic", "name": "kubevirt-hyperconverged", "entries": .}' > "${frag}"/graph.json
+        ./opm render $(opm_alpha_params "${frag}") "$from" | \
+          jq "select( .package == \"$package_name\" or .name == \"$package_name\")" | \
+          jq 'select( (.schema != "olm.bundle") or (.name | scan("v4\\.\\d+\\.\\d+") | split(".") | .[1] | tonumber | . >= '${MIN_MINOR}'))' |
+          jq 'if (.schema == "olm.bundle") then {schema: .schema, image: .image} else (if (.schema == "olm.package") then {schema: .schema, name: .name, defaultChannel: .defaultChannel} else . end) end' | \
+          jq 'if (.schema == "olm.channel") then {schema: .schema, name: .name, package: .package, entries: [.entries[] | select(.name | scan("v4\\.\\d+\\.\\d+") | split(".") | .[1] | tonumber | . >= '${MIN_MINOR}')]} else . end' | \
+          jq -s "{schema: \"olm.template.basic\", name: \"$package_name\", entries: .}" > "${frag}"/graph.json
       ;;
       *)
         echo "please specify if yq or jq"
