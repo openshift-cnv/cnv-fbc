@@ -4,19 +4,18 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/openshift-cnv/cnv-fbc?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
-    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
-    pipelinesascode.tekton.dev/cancel-in-progress: "true"
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "stage" && ( "v4.20/***".pathChanged() || ".tekton/v4-20-stage-pull-request.yaml".pathChanged()
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "stage" && ( "v4.19/***".pathChanged() || ".tekton/v4-19-stage-pull-request.yaml".pathChanged()
       )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: cnv-fbc-stage
-    appstudio.openshift.io/component: v4-20-stage
+    appstudio.openshift.io/component: v4-19-stage
     pipelines.appstudio.openshift.io/type: build
-  name: v4-20-stage-on-pull-request
+  name: v4-19-stage-on-push
   namespace: cnv-fbc-tenant
 spec:
   params:
@@ -25,20 +24,18 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/cnv-fbc-tenant/v420-cnv-fbc:on-pr-{{revision}}
-  - name: image-expires-after
-    value: 5d
+    value: quay.io/redhat-user-workloads/cnv-fbc-tenant/v419-cnv-fbc:{{revision}}
   - name: build-platforms
     value:
     - linux/x86_64
   - name: dockerfile
     value: catalog.Dockerfile
   - name: path-context
-    value: v4.20
+    value: v4.19
   pipelineRef:
     name: fbc-pipeline
   taskRunTemplate:
-    serviceAccountName: build-pipeline-v4-20-stage
+    serviceAccountName: build-pipeline-v4-19-stage
   workspaces:
   - name: git-auth
     secret:
