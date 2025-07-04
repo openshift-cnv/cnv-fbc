@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/openshift-cnv/cnv-fbc?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "production" && ( "v4.18/***".pathChanged() || ".tekton/v4-18-prod-pull-request.yaml".pathChanged()
+      )
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: cnv-fbc-prod
+    appstudio.openshift.io/component: v4-18-prod
+    pipelines.appstudio.openshift.io/type: build
+  name: v4-18-prod-on-push
+  namespace: cnv-fbc-tenant
+spec:
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: output-image
+    value: quay.io/redhat-user-workloads/cnv-fbc-tenant/v418-cnv-fbc:{{revision}}
+  - name: build-platforms
+    value:
+    - linux/x86_64
+  - name: dockerfile
+    value: catalog.Dockerfile
+  - name: path-context
+    value: v4.18
+  pipelineRef:
+    name: fbc-pipeline
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-v4-18-prod
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
