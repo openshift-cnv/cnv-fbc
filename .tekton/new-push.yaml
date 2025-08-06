@@ -379,13 +379,13 @@ spec:
       - validate-fbc
       taskRef:
         params:
-        - name: name
-          value: fbc-target-index-pruning-check
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-fbc-target-index-pruning-check:0.1@sha256:6f1d1edb746a7b20ad4fe523344c5515a259403b8314f5208d96ea0c6ec06169
-        - name: kind
-          value: task
-        resolver: bundles
+        - name: url
+          value: https://github.com/xDaile/build-definitions.git
+        - name: revision
+          value: update_pruning_check
+        - name: pathInRepo
+          value: task/fbc-target-index-pruning-check/0.1/fbc-target-index-pruning-check.yaml
+        resolver: git
       when:
       - input: $(params.skip-checks)
         operator: in
