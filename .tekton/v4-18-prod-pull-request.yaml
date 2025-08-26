@@ -9,11 +9,10 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "production" && ( "v4.18/***".pathChanged() || ".tekton/v4-18-prod-pull-request.yaml".pathChanged()
-      )
+      == "production" && "v4.18/***".pathChanged()
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: cnv-fbc-prod
+    appstudio.openshift.io/application: cnv-fbc-v4-18-prod
     appstudio.openshift.io/component: v4-18-prod
     pipelines.appstudio.openshift.io/type: build
   name: v4-18-prod-on-pull-request

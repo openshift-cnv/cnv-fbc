@@ -9,14 +9,13 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "main" && ( "v4.18/***".pathChanged() || ".tekton/v418-cnv-fbc-pull-request.yaml".pathChanged()
-      )
+      == "production" && "v4.12/***".pathChanged()
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: cnv-fbc-v4-18
-    appstudio.openshift.io/component: v418-cnv-fbc
+    appstudio.openshift.io/application: cnv-fbc-v4-12-prod
+    appstudio.openshift.io/component: v4-12-prod
     pipelines.appstudio.openshift.io/type: build
-  name: v418-cnv-fbc-on-pull-request
+  name: v4-12-prod-on-pull-request
   namespace: cnv-fbc-tenant
 spec:
   params:
@@ -25,7 +24,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/cnv-fbc-tenant/v418-cnv-fbc:on-pr-{{revision}}
+    value: quay.io/redhat-user-workloads/cnv-fbc-tenant/v412-cnv-fbc:on-pr-{{revision}}
   - name: image-expires-after
     value: 5d
   - name: build-platforms
@@ -34,11 +33,11 @@ spec:
   - name: dockerfile
     value: catalog.Dockerfile
   - name: path-context
-    value: v4.18
+    value: v4.12
   pipelineRef:
     name: fbc-pipeline
   taskRunTemplate:
-    serviceAccountName: build-pipeline-v418-cnv-fbc
+    serviceAccountName: build-pipeline-v4-12-prod
   workspaces:
   - name: git-auth
     secret:
