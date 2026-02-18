@@ -74,6 +74,10 @@ spec:
     description: Skip checks against built image
     name: skip-checks
     type: string
+  - default: "false"
+    description: Skip FIPS check against built image
+    name: skip-fips-check
+    type: string
   - default: "true"
     description: Execute the build with network isolation
     name: hermetic
@@ -390,6 +394,10 @@ spec:
       resolver: bundles
     when:
     - input: $(params.skip-checks)
+      operator: in
+      values:
+      - "false"
+    - input: $(params.skip-fips-check)
       operator: in
       values:
       - "false"
