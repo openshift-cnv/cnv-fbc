@@ -113,6 +113,10 @@ spec:
     default: 'false'
     description: Enable cache proxy configuration
     type: string
+  - default: ".tekton/images-mirror-set.yaml"
+    description: Path to a file with image mirror set configuration
+    name: image-mirror-set-path
+    type: string
   results:
   - description: ""
     name: IMAGE_URL
@@ -126,10 +130,6 @@ spec:
   - description: ""
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
-  - default: ".tekton/images-mirror-set.yaml"
-    description: Path to a file with image mirror set configuration
-    name: image-mirror-set-path
-    type: string
   tasks:
   - name: init
     params:
