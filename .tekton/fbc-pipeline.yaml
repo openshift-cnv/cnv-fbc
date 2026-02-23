@@ -126,6 +126,10 @@ spec:
   - description: ""
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
+  - default: ".tekton/images-mirror-set.yaml"
+    description: Path to a file with image mirror set configuration
+    name: image-mirror-set-path
+    type: string
   tasks:
   - name: init
     params:
@@ -356,6 +360,8 @@ spec:
       value: $(tasks.build-image-index.results.IMAGE_URL)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+    - name: image-mirror-set-path
+      value: $(params.image-mirror-set-path)
     runAfter:
     - build-image-index
     taskRef:
