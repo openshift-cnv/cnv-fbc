@@ -115,6 +115,29 @@ elif [[ "$2" == "quay" ]]; then
 fi
 }
 
+validateImagesInCatalog()
+{
+  local frag=$1
+  local catalog="${frag}/catalog/kubevirt-hyperconverged/catalog.json"
+  local graph="${frag}/graph.yaml"
+  local names=($(grep -E '^\s+- name: kubevirt-hyperconverged-operator\.' "$graph" | sed 's/.*name: *//'))
+  local images=($(grep -E '^\s+image: ' "$graph" | sed 's/.*image: *//'))
+  local catalog_pairs
+  catalog_pairs=$(jq -c 'select(.schema=="olm.bundle") | {name, image}' "$catalog")
+  echo "Validating images in catalog for ${frag}..."
+  for i in "${!names[@]}"; do
+    local name="${names[$i]}"
+    local image="${images[$i]}"
+    if echo "$catalog_pairs" | jq -n --arg n "$name" --arg i "$image" '[inputs | select(.name==$n and .image==$i)] | length > 0' | grep -q true; then
+      echo "OK: $name"
+    else
+      echo "MISSING (name or image mismatch): name=$name image=${image}"
+      exit 1
+    fi
+  done
+  echo "✅ Images in catalog for ${frag} successfully validated."
+}
+
 
 cmd="$1"
 case $cmd in
@@ -187,6 +210,7 @@ case $cmd in
 # shellcheck disable=SC2086,SC2046
     opm alpha render-template basic $(opm_alpha_params "${frag}") "${frag}"/graph.yaml > "${frag}"/catalog/kubevirt-hyperconverged/catalog.json
     unsetCustomRegistry "${frag}" "$3" "$4"
+    validateImagesInCatalog "${frag}"
     echo "rendered catalog for ${frag}."
   ;;
   "--render-all")
@@ -197,6 +221,7 @@ case $cmd in
 # shellcheck disable=SC2086,SC2046
       opm alpha render-template basic $(opm_alpha_params "${frag}") "${frag}"/graph.yaml > "${frag}"/catalog/kubevirt-hyperconverged/catalog.json
       unsetCustomRegistry "${frag}" "$2"
+      validateImagesInCatalog "${frag}"
       echo "rendered catalog for ${frag}."
     done
   ;;
