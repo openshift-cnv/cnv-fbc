@@ -124,14 +124,22 @@ validateImagesInCatalog()
   local images=($(grep -E '^\s+image: ' "$graph" | sed 's/.*image: *//'))
   local catalog_pairs
   catalog_pairs=$(jq -c 'select(.schema=="olm.bundle") | {name, image}' "$catalog")
+  local graph_images
+  graph_images=$(printf '%s\n' "${images[@]}")
   echo "Validating images in catalog for ${frag}..."
-  for i in "${!names[@]}"; do
-    local name="${names[$i]}"
-    local image="${images[$i]}"
-    if echo "$catalog_pairs" | jq -n --arg n "$name" --arg i "$image" '[inputs | select(.name==$n and .image==$i)] | length > 0' | grep -q true; then
+  for name in "${names[@]}"; do
+    local pair
+    pair=$(echo "$catalog_pairs" | jq -n -c --arg n "$name" '[inputs | select(.name==$n)][0]')
+    if [[ -z "$pair" || "$pair" == "null" ]]; then
+      echo "MISSING: name=$name (not in catalog)"
+      exit 1
+    fi
+    local catalog_image
+    catalog_image=$(echo "$pair" | jq -r '.image')
+    if echo "$graph_images" | grep -qF "$catalog_image"; then
       echo "OK: $name"
     else
-      echo "MISSING (name or image mismatch): name=$name image=${image}"
+      echo "MISSING: name=$name image not in graph (catalog image=${catalog_image%%@*}@...)"
       exit 1
     fi
   done
