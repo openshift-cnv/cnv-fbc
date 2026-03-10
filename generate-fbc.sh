@@ -190,12 +190,21 @@ case $cmd in
     fi
     setBrew "${frag}" "$3"
     sed -i "/# hco-bundle-registry v4\./d" "$frag"/graph.yaml
-    grep -E "image: [brew\.]*registry.redhat.io/container-native-virtualization/hco-bundle-registry[-rhel9]*@sha256" "$frag"/graph.yaml | while read -r line ; do
+    grep -E "image: ([brew\.]*registry.redhat.io/container-native-virtualization|quay.io/openshift-virtualization/konflux-builds/[^/]+)/hco-bundle-registry[-rhel9]*@sha256" "$frag"/graph.yaml | while read -r line ; do
       image=${line/image: /}
       echo "Processing $image"
+      # CPaaS sets the version on the url label. On konflux we just use the version label.
       # shellcheck disable=SC2086
       url=$(${SKOPEO_CMD} inspect --retry-times=5 --no-tags --format "{{.Labels.url}}" ${AUTH_FILE} docker://"$image")
-      tag=${url/*\/images\/}
+      if [[ -z "$url" || "$url" == "<no value>" ]]; then
+        # shellcheck disable=SC2086
+        url=$(${SKOPEO_CMD} inspect --retry-times=5 --no-tags --format "{{.Labels.version}}-{{.Labels.release}}" ${AUTH_FILE} docker://"$image")
+      fi
+      if [[ "$url" == *"/images/"* ]]; then
+        tag=${url/*\/images\/}
+      else
+        tag=$url
+      fi
       sed -i -E "s|^( *)(image: )$image|\1\2$image\n\1# hco-bundle-registry $tag|g" "$frag"/graph.yaml
     done
     unsetBrew "${frag}" "$3"
