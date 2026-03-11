@@ -9,6 +9,13 @@ entries:
       mediatype: image/svg+xml
     description: '# Requirements\nYour cluster must be installed on bare metal infrastructure with Red Hat Enterprise Linux CoreOS workers.\n\n# Details\n**OpenShift Virtualization** extends Red Hat OpenShift Container Platform, allowing you to host and manage virtualized workloads on the same platform as container-based workloads. From the OpenShift Container Platform web console, you can import a VMware virtual machine from vSphere, create new or clone existing VMs, perform live migrations between nodes, and more. You can use OpenShift Virtualization to manage both Linux and Windows VMs.\n\nThe technology behind OpenShift Virtualization is developed in the [KubeVirt](https://kubevirt.io) open source community. The KubeVirt project extends [Kubernetes](https://kubernetes.io) by adding additional virtualization resource types through [Custom Resource Definitions](https://kubernetes.io/docs/tasks/access-kubernetes-api/extend-api-custom-resource-definitions/) (CRDs). Administrators can use Custom Resource Definitions to manage `VirtualMachine` resources alongside all other resources that Kubernetes provides.'
   - entries:
+      - name: kubevirt-hyperconverged-operator.v4.21.1
+        replaces: kubevirt-hyperconverged-operator.v4.21.0
+        skipRange: '>=4.21.0 <4.21.1'
+    name: candidate
+    package: kubevirt-hyperconverged
+    schema: olm.channel
+  - entries:
       - name: kubevirt-hyperconverged-operator.v4.12.0
         replaces: kubevirt-hyperconverged-operator.v4.11.1
         skipRange: '>=4.11.2 <4.12.0'
@@ -106,6 +113,9 @@ entries:
       - name: kubevirt-hyperconverged-operator.v4.21.0
         replaces: kubevirt-hyperconverged-operator.v4.20.3
         skipRange: '>=4.20.4 <4.21.0'
+      - name: kubevirt-hyperconverged-operator.v4.21.1
+        replaces: kubevirt-hyperconverged-operator.v4.21.0
+        skipRange: '>=4.20.7 <4.21.1'
     name: stable
     package: kubevirt-hyperconverged
     schema: olm.channel
@@ -218,12 +228,8 @@ entries:
     image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:3653cae46299d7e05f5580b4006e3ef5cdddcbb9fb0a34e37aaae01811c5e8f6
     # hco-bundle-registry v4.21.0.rhel9-186
   - schema: olm.bundle
-    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:68f2ae2a08d7a928f0d2e1d5252955ba3f872b069d2dbd9f6dda890800759bde
-    # hco-bundle-registry v4.21.1.rhel9-77
-  - entries:
-      - name: kubevirt-hyperconverged-operator.v4.21.1
-        replaces: kubevirt-hyperconverged-operator.v4.21.0
-        skipRange: '>=4.21.0 <4.21.1'
-    name: nightly
-    package: kubevirt-hyperconverged
-    schema: olm.channel
+    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:83dea44dd7b016b5427e257e9f3608825d6d31751566d4ddef80cfa85d9b025b
+    # hco-bundle-registry v4.21.1.rhel9-72
+  - schema: olm.bundle
+    image: registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:83dea44dd7b016b5427e257e9f3608825d6d31751566d4ddef80cfa85d9b025b
+    # hco-bundle-registry v4.21.1.rhel9-72
