@@ -45,6 +45,27 @@ spec:
       - input: $(tasks.status)
         operator: in
         values: ["Failed"]
+  - name: report-fbc-build-status
+    params:
+    - name: git-url
+      value: $(params.git-url)
+    - name: revision
+      value: $(params.revision)
+    - name: pipelinerun-name
+      value: $(context.pipelineRun.name)
+    - name: pipelinerun-namespace
+      value: $(context.pipelineRun.namespace)
+    - name: PIPELINE_AGGREGATE_STATUS
+      value: $(tasks.status)
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: "https://github.com/openshift-cnv/tekton-tasks.git"
+      - name: revision
+        value: 803507d56473bdeaa98da2607049b6dcdc324f33
+      - name: pathInRepo
+        value: "fbc/report-fbc-build-status.yaml"
   params:
   - description: Source Repository URL
     name: git-url
