@@ -176,6 +176,7 @@ case $cmd in
 # shellcheck disable=SC2086,SC2046
 	opm render $(opm_alpha_params "${frag}") "$from" -o yaml | \
 	    yq "select( .package == \"$package_name\" or .name == \"$package_name\")" | \
+	    yq 'select(.schema != "io.openshift.operators.lifecycles.v1alpha1")' | \
       yq 'select(.schema != "olm.bundle" or .name == null or .name | capture("v4\.(?<minor>\d+)\.\d+") | .minor | to_number | . >= '${MIN_MINOR}')' | \
       yq 'select(.schema == "olm.bundle") = {"schema": .schema, "image": .image}' | \
       yq 'select(.schema == "olm.package") = {"schema": .schema, "name": .name, "defaultChannel": .defaultChannel, "icon": {"base64data": strenv(ICON_BASE64), "mediatype": "image/svg+xml"}, "description": strenv(DESCRIPTION)}' | \
@@ -187,6 +188,7 @@ case $cmd in
       "jq")
 # shellcheck disable=SC2086,SC2046
         opm render $(opm_alpha_params "${frag}") "$from" | jq "select( .package == \"$package_name\" or .name == \"$package_name\")" | \
+            jq 'select(.schema != "io.openshift.operators.lifecycles.v1alpha1")' | \
             jq --arg icon "$ICON_BASE64" --arg description "$DESCRIPTION" 'if (.schema == "olm.bundle") then {schema: .schema, image: .image} else (if (.schema == "olm.package") then {schema: .schema, name: .name, defaultChannel: .defaultChannel, icon: {base64data: $icon, mediatype: "image/svg+xml"}, description: $description} else . end) end' | \
             jq -s | \
             jq '{"schema": "olm.template.basic", "name": "kubevirt-hyperconverged", "entries": .}' > "${frag}"/graph.json
