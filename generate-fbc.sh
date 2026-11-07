@@ -59,13 +59,22 @@ EOT
 
 dockerfile()
 {
-    suffix="-rhel9"
-    if [[ "$1" =~ ^v4.1(1|2|3|4)$ ]]; then suffix="" ; fi
+    # Preserve manual pin workarounds (e.g. v5.2 pinned to v5.1 pending upstream image availability)
+    if [[ -f "$1/catalog.Dockerfile" ]] && grep -q "TODO: Update" "$1/catalog.Dockerfile"; then
+        return 0
+    fi
+
+    local ocp_major="${1#v}"
+    ocp_major="${ocp_major%%.*}"
+    local ocp_ns="openshift${ocp_major}"
+
+    local suffix="-rhel9"
+    if [[ "$1" =~ ^v4\.1(1|2|3|4)$ ]]; then suffix="" ; fi
 
     cat <<EOT > "$1"/catalog.Dockerfile
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM registry.redhat.io/openshift4/ose-operator-registry${suffix}:$1
+FROM registry.redhat.io/${ocp_ns}/ose-operator-registry${suffix}:$1
 
 # Configure the entrypoint and command
 ENTRYPOINT ["/bin/opm"]
@@ -126,10 +135,10 @@ case $cmd in
 # shellcheck disable=SC2086,SC2046
 	opm render $(opm_alpha_params "${frag}") "$from" -o yaml | \
 	    yq "select( .package == \"$package_name\" or .name == \"$package_name\")" | \
-      yq 'select(.schema != "olm.bundle" or .name == null or .name | capture("v4\.(?<minor>\d+)\.\d+") | .minor | to_number | . >= '${MIN_MINOR}')' | \
+      yq 'select(.schema != "olm.bundle" or .name == null or (.name | capture("v(?<major>\d+)\.(?<minor>\d+)\.\d+") | (((.major // "0") | to_number) > 4 or (((.major // "0") | to_number) == 4 and ((.minor // "0") | to_number) >= '${MIN_MINOR}'))))' | \
       yq 'select(.schema == "olm.bundle") = {"schema": .schema, "image": .image}' | \
       yq 'select(.schema == "olm.package") = {"schema": .schema, "name": .name, "defaultChannel": .defaultChannel, "icon": {"base64data": strenv(ICON_BASE64), "mediatype": "image/svg+xml"}, "description": strenv(DESCRIPTION)}' | \
-      yq 'select(.schema == "olm.channel") = {"entries": .entries | filter(.name | capture("v4\.(?<minor>\d+)\.\d+") | .minor | to_number | . >= '${MIN_MINOR}'), "name": .name, "package": .package, "schema": .schema}' | \
+      yq 'select(.schema == "olm.channel") = {"entries": .entries | filter(.name | capture("v(?<major>\d+)\.(?<minor>\d+)\.\d+") | (((.major // "0") | to_number) > 4 or (((.major // "0") | to_number) == 4 and ((.minor // "0") | to_number) >= '${MIN_MINOR}'))), "name": .name, "package": .package, "schema": .schema}' | \
       yq '[.]' | \
       yq '{"schema": "olm.template.basic", "name": "kubevirt-hyperconverged", "entries":.}' | \
       sed 's|^  #|    #|g' > "${frag}/graph.yaml"
@@ -150,7 +159,7 @@ case $cmd in
     dockerfile "$frag"
   ;;
   "--init-basic-all")
-    for f in ./"v4."*; do
+    for f in ./"v"[4-9].*; do
       frag=${f#./}
       $0 --init-basic "${frag}" yq
       $0 --comment-graph "${frag}"
@@ -171,7 +180,7 @@ case $cmd in
     echo "rendered catalog for ${frag}."
   ;;
   "--render-all")
-    for f in ./"v4."*; do
+    for f in ./"v"[4-9].*; do
       frag=${f#./}
       echo "rendering catalog for ${frag}..."
       setBrew "${frag}" "$2"
@@ -189,7 +198,7 @@ case $cmd in
       exit 1
     fi
     setBrew "${frag}" "$3"
-    sed -i "/# hco-bundle-registry v4\./d" "$frag"/graph.yaml
+    sed -i -E "/# hco-bundle-registry v[0-9]+\./d" "$frag"/graph.yaml
     grep -E "image: ([brew\.]*registry.redhat.io/container-native-virtualization|quay.io/openshift-virtualization/konflux-builds/[^/]+)/hco-bundle-registry[-rhel9]*@sha256" "$frag"/graph.yaml | while read -r line ; do
       image=${line/image: /}
       echo "Processing $image"
@@ -210,10 +219,10 @@ case $cmd in
     unsetBrew "${frag}" "$3"
   ;;
   "--comment-graph-all")
-    for f in ./"v4."*; do
+    for f in ./"v"[4-9].*; do
       frag=${f#./}
       setBrew "${frag}" "$2"
-      sed -i "/# hco-bundle-registry v4\./d" "$frag"/graph.yaml
+      sed -i -E "/# hco-bundle-registry v[0-9]+\./d" "$frag"/graph.yaml
       grep -E "image: [brew\.]*registry.redhat.io/container-native-virtualization/hco-bundle-registry[-rhel9]*@sha256" "$frag"/graph.yaml | while read -r line ; do
         image=${line/image: /}
         echo "Processing $image"
